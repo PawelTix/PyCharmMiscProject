@@ -32,6 +32,8 @@ class ObjectManager:
         x, y = pos
         for i in range(len(self.objects) - 1, -1, -1):
             shape, rect = self.objects[i]
+            if shape == "wall":
+                continue  # NIE pozwalamy usuwać ścian
             if rect.collidepoint(x, y):
                 del self.objects[i]
                 return True
@@ -84,6 +86,13 @@ class ObjectManager:
     def draw(self, screen, powered=None):
         if powered is None:
             powered = set()
+
+        for idx, (shape, rect) in enumerate(self.objects):
+
+            # --- WNĘTRZNE ŚCIANY ---
+            if shape == "wall":
+                pygame.draw.rect(screen, (80, 80, 80), rect)  # szara ściana
+                continue
 
         for idx, (shape, rect) in enumerate(self.objects):
             # kolory bazowe
