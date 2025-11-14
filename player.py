@@ -18,7 +18,7 @@ animations = {
     "down": [get_frame(c, 0) for c in range(3)],
     "right": [get_frame(c, 1) for c in range(3)],
     "up": [get_frame(c, 2) for c in range(3)],
-    "left": [get_frame(c, 3) for c in range(4)],
+    "left": [get_frame(c, 3) for c in range(3)],
 }
 
 
@@ -35,8 +35,8 @@ class Player(pygame.sprite.Sprite):
         self.image = self.animations[self.direction][self.frame_index]
         self.rect = self.image.get_rect(center=(x, y))
         self.ghost_rect: pygame.Rect | None = None
-        self.speed = 1  # px/s
-        self.anim_speed = 8  # klatek na sekundę
+        self.speed = 0.5  # px/s
+        self.anim_speed = 0.01  # klatek na sekundę
         self.anim_timer = 0
         self.shape = "square"
         self.shape_sizes = {

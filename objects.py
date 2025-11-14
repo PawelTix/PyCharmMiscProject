@@ -1,59 +1,27 @@
 import pygame
 from collections import deque
-
-
-class GameObject(pygame.sprite.Sprite):
-    """
-    Prosty sprite obiektu w grze.
-    kind: "triangle", "tall_rect", "long_rect", "wall", ...
-    rect: pygame.Rect – pozycja i rozmiar obiektu
-    """
-
-    def __init__(self, kind: str, rect: pygame.Rect):
-        super().__init__()
-        self.kind = kind
-        self.rect = rect.copy()
-
-        # Na razie generujemy prosty surface – logika rysowania i tak
-        # jest w ObjectManager.draw (trójkąty itp.).
-        self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+from assets import load_textures
 
 
 class ObjectManager:
     def __init__(self):
-        # przechowujemy sprite’y w grupie
-        self.group = pygame.sprite.Group()
+        # lista: (shape, rect)
+        self.objects = []
 
-    @property
-    def objects(self):
-        """Zachowujemy kompatybilny interfejs – zwraca listę sprite’ów."""
-        return list(self.group.sprites())
+        # wczytujemy wszystkie tekstury z assets/
+        # klucze: "player", "triangle", "tall_rect", "long_rect"
+        self.textures = load_textures()
 
-    # =================== DODAWANIE / USUWANIE ===================
+        # cache przeskalowanych sprite’ów, żeby nie skalować co klatkę
+        # klucz: (shape, width, height) -> Surface
+        self._scaled_cache = {}
 
-    def add_object(self, shape: str, rect: pygame.Rect):
-        obj = GameObject(shape, rect)
-        self.group.add(obj)
-        return obj
-
-    def add_wall(self, rect: pygame.Rect):
-        return self.add_object("wall", rect)
-
-    def remove_at_point(self, pos):
-        x, y = pos
-        # od końca – żeby bezpiecznie usuwać
-        for obj in reversed(self.objects):
-            if obj.kind == "wall":
-                continue  # NIE pozwalamy usuwać ścian
-            if obj.rect.collidepoint(x, y):
-                self.group.remove(obj)
-                return True
-        return False
+    def add_object(self, shape, rect):
+        self.objects.append((shape, rect.copy()))
 
     # =================== LOGIKA POŁĄCZEŃ ===================
 
-    @staticmethod
-    def _rect_connected(r1: pygame.Rect, r2: pygame.Rect) -> bool:
+    def _rect_connected(self, r1, r2):
         """Czy dwa recty się łączą? (dotyk lub nachodzenie)"""
         if r1.colliderect(r2):
             return True
@@ -70,29 +38,38 @@ class ObjectManager:
 
         return False
 
+    def remove_at_point(self, pos):
+        x, y = pos
+        for i in range(len(self.objects) - 1, -1, -1):
+            shape, rect = self.objects[i]
+            if shape == "wall":
+                continue  # NIE pozwalamy usuwać ścian
+            if rect.collidepoint(x, y):
+                del self.objects[i]
+                return True
+        return False
+
     def compute_powered(self):
         """Zwraca indeksy obiektów, które mają połączenie z elektrownią (triangle)."""
-        objs = self.objects
-        n = len(objs)
+        n = len(self.objects)
         if n == 0:
             return set()
 
         # Znajdź elektrownie
-        power_plants = [i for i, obj in enumerate(objs) if obj.kind == "triangle"]
+        power_plants = [i for i, (shape, _) in enumerate(self.objects)
+                        if shape == "triangle"]
         if not power_plants:
             return set()
 
         # Budujemy graf połączeń
         adj = [[] for _ in range(n)]
         for i in range(n):
-            si = objs[i].kind
-            ri = objs[i].rect
+            si, ri = self.objects[i]
             if si not in ("triangle", "tall_rect", "long_rect"):
                 continue
 
             for j in range(i + 1, n):
-                sj = objs[j].kind
-                rj = objs[j].rect
+                sj, rj = self.objects[j]
                 if sj not in ("triangle", "tall_rect", "long_rect"):
                     continue
 
@@ -113,27 +90,55 @@ class ObjectManager:
 
         return visited
 
+    # =================== POMOCNICZE – SPRITE Z PIXEL ARTU ===================
+
+    def _get_sprite_image(self, shape, size):
+        """Zwraca przeskalowany obrazek dla danego shape i size lub None."""
+        w, h = size
+        key = (shape, w, h)
+
+        if key in self._scaled_cache:
+            return self._scaled_cache[key]
+
+        base_img = self.textures.get(shape)
+        if base_img is None:
+            return None  # brak tekstury – użyjemy fallbacku (kolorowy rect)
+
+        scaled = pygame.transform.smoothscale(base_img, (w, h))
+        self._scaled_cache[key] = scaled
+        return scaled
+
     # =================== RYSOWANIE ===================
 
     def draw(self, screen, powered=None):
         if powered is None:
             powered = set()
 
-        objs = self.objects
+        # --- najpierw ściany (żeby były pod obiektami) ---
+        for shape, rect in self.objects:
+            if shape == "wall":
+                pygame.draw.rect(screen, (80, 80, 80), rect)  # szara ściana
 
-        # --- WNĘTRZNE ŚCIANY ---
-        for obj in objs:
-            if obj.kind == "wall":
-                pygame.draw.rect(screen, (80, 80, 80), obj.rect)
-        # --- RESZTA OBIEKTÓW ---
-        for idx, obj in enumerate(objs):
-            shape = obj.kind
-            rect = obj.rect
-
+        # --- potem wszystkie obiekty (triangle / tall_rect / long_rect) ---
+        for idx, (shape, rect) in enumerate(self.objects):
             if shape == "wall":
                 continue
 
-            # kolory bazowe
+            # spróbuj narysować pixel-art
+            img = self._get_sprite_image(shape, rect.size)
+
+            if img is not None:
+                screen.blit(img, rect)
+
+                # podświetlenie, jeśli ma prąd
+                if idx in powered:
+                    pygame.draw.rect(screen, (0, 255, 0), rect, 3)
+                else:
+                    pygame.draw.rect(screen, (0, 0, 0), rect, 1)
+                continue
+
+            # --- Fallback: gdyby brakło tekstury, rysujemy stary prostokąt ---
+
             if shape == "triangle":
                 base = (200, 180, 40)
             elif shape == "tall_rect":
@@ -156,7 +161,6 @@ class ObjectManager:
             else:
                 color = base
 
-            # rysowanie
             if shape in ("square", "tall_rect", "long_rect"):
                 pygame.draw.rect(screen, color, rect)
             elif shape == "triangle":
