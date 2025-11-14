@@ -81,7 +81,7 @@ while running:
     if game_started:
         keys = pygame.key.get_pressed()
         player.move(keys, objects.objects, WIDTH, HEIGHT)
-        player.update()
+        player.update(objects.objects)
 
         # zmiana pokoju
         if player.rect.left <= 0 and room_x > 0:
