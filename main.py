@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 from menu import Menu
-from player import Player
+from player import Player, animations
 from objects import ObjectManager
 from walls import draw_walls, handle_wall_collision
 from rooms_assets import apply_random_room_assets
@@ -26,7 +26,7 @@ font = pygame.font.Font(None, 50)
 small_font = pygame.font.Font(None, 30)
 
 menu = Menu(screen, font)
-player = Player((WIDTH // 2, HEIGHT // 2))
+player = Player(WIDTH // 2, HEIGHT // 2, animations)
 
 def draw_minimap(screen, rooms, rx, ry):
     cell = MINIMAP_SIZE // 3
@@ -101,7 +101,7 @@ while running:
 
     if game_started:
         keys = pygame.key.get_pressed()
-        player.move(keys, objects.objects, WIDTH, HEIGHT)
+        player.update(dt, keys)
         update_ghost(player, objects.objects)
 
         # kolizje + ewentualna zmiana pokoju
