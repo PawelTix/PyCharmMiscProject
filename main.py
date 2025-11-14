@@ -13,7 +13,7 @@ MINIMAP_MARGIN = 20
 
 pygame.init()
 
-# textures = load_textures()
+#textures = load_textures()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Night Shift")
@@ -60,6 +60,9 @@ def draw_minimap(screen, rooms, rx, ry):
 running = True
 game_started = False
 
+running = True
+game_started = False
+
 while running:
     dt = clock.tick(FPS)
     mouse_pos = pygame.mouse.get_pos()
@@ -73,24 +76,33 @@ while running:
                 game_started = True
             continue
 
+        # mini-menu
         res = menu.handle_event(event)
         if res in ("triangle", "tall_rect", "long_rect"):
             player.change_shape(res)
 
+        # stawianie obiektów PPM
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             player.place_object(event.pos, objects.objects)
 
+        # --- TU OBSŁUGUJEMY KLAWISZE ---
         if event.type == pygame.KEYDOWN:
+            # rotacja kabla
             if event.key == pygame.K_r and player.shape == "long_rect":
-                # zmiana rotacji
                 player.rotation = 1 - player.rotation
-
-                # aktualizujemy ghost_rect do nowego obrotu
                 if player.rotation == 0:
                     w, h = 80, 25
                 else:
                     w, h = 25, 80
-                player.ghost_rect.size = (w, h)
+                if player.ghost_rect:
+                    player.ghost_rect.size = (w, h)
+
+            # USUWANIE obiektu pod myszką
+            elif event.key == pygame.K_DELETE and player.shape == "square":
+                removed = objects.remove_at_point(mouse_pos)
+                # print dla testu:
+                # print("Usunięto obiekt?" , removed)
+
 
     if game_started:
         keys = pygame.key.get_pressed()

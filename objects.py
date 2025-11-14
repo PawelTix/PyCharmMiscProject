@@ -28,6 +28,17 @@ class ObjectManager:
 
         return False
 
+    def remove_at_point(self, pos):
+        x, y = pos
+        for i in range(len(self.objects) - 1, -1, -1):
+            shape, rect = self.objects[i]
+            if rect.collidepoint(x, y):
+                del self.objects[i]
+                return True
+        return False
+
+        return False
+
     def compute_powered(self):
         """Zwraca indeksy obiektów, które mają połączenie z elektrownią (triangle)."""
         n = len(self.objects)
