@@ -4,12 +4,17 @@ from menu import Menu
 from player import Player
 from objects import ObjectManager
 
+#from assets import load_textures
+
 WIDTH, HEIGHT = 1920, 1080
 FPS = 60
 MINIMAP_SIZE = 200
 MINIMAP_MARGIN = 20
 
 pygame.init()
+
+# textures = load_textures()
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Night Shift")
 clock = pygame.time.Clock()
@@ -18,6 +23,15 @@ small_font = pygame.font.Font(None, 30)
 
 menu = Menu(screen, font)
 player = Player((WIDTH // 2, HEIGHT // 2))
+
+#menu = Menu(screen, font)
+
+#player = Player((WIDTH // 2, HEIGHT // 2), textures=textures)
+
+#rooms = [[ObjectManager(textures=textures) for _ in range(3)] for _ in range(3)]
+
+
+
 
 # --- Pokoje 3x3 ---
 rooms = [[ObjectManager() for _ in range(3)] for _ in range(3)]
