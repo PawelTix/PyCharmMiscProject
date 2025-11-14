@@ -175,6 +175,23 @@ class Player:
         pygame.draw.rect(screen, (0, 200, 255), self.rect)
 
     def draw_ghost(self, screen, ok):
+        # jeśli nie ma ghost rect – nic nie rysujemy
+        if not self.ghost_rect:
+            return
+
+        color = (0, 255, 0) if ok else (255, 0, 0)
+
+        if self.shape == "triangle":
+            x, y, w, h = self.ghost_rect
+            pts = [
+                (x + w // 2, y),
+                (x, y + h),
+                (x + w, y + h)
+            ]
+            pygame.draw.polygon(screen, color, pts, width=3)
+        else:
+            pygame.draw.rect(screen, color, self.ghost_rect, width=3)
+
         if not self.ghost_rect:
             return
         color = (0, 255, 0) if ok else (255, 0, 0)
@@ -193,12 +210,28 @@ class Player:
     # ======================= STAWIANIE =========================
 
     def place_object(self, mouse_pos, objects):
+        # nie stawiamy jeśli gracz w trybie square
         if self.shape == "square":
             return
+
         if not self.ghost_rect:
             return
+
+        # --- LIMIT ZASIĘGU ---
+        px, py = self.rect.center
+        mx, my = mouse_pos
+        dx = mx - px
+        dy = my - py
+        MAX_PLACE_DISTANCE = 250  # możesz ustawić inną wartość
+
+        if dx * dx + dy * dy > MAX_PLACE_DISTANCE * MAX_PLACE_DISTANCE:
+            print("❌ Za daleko aby postawić obiekt!")
+            return
+
+        # kolizja ghosta
         if self.ghost_collides(objects):
             return
 
+        # stawianie
         objects.append((self.shape, self.ghost_rect.copy()))
         self.change_shape("square")
