@@ -24,6 +24,8 @@ def update_ghost(player, objects):
     Aktualizuje pozycję ghosta:
     - zawsze podąża za myszką
     - dla kabelków ('long_rect') przyciąga się do końców innych kabli
+
+    objects – lista sprite’ów (GameObject) z ObjectManager.objects
     """
     if not player.ghost_rect:
         return
@@ -40,7 +42,10 @@ def update_ghost(player, objects):
     nearest_dist2 = SNAP_RADIUS * SNAP_RADIUS
 
     # szukamy najbliższego punktu złącza na istniejących kablach
-    for shape, rect in objects:
+    for obj in objects:
+        shape = obj.kind
+        rect = obj.rect
+
         if shape != "long_rect":
             continue
 

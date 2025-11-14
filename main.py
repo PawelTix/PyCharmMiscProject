@@ -10,7 +10,7 @@ from ghost import update_ghost
 
 #from assets import load_textures
 
-WIDTH, HEIGHT = 1920, 1080
+WIDTH, HEIGHT = 1080, 800
 FPS = 60
 MINIMAP_SIZE = 200
 MINIMAP_MARGIN = 20
@@ -79,7 +79,7 @@ while running:
 
         # stawianie obiektów PPM
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-            player.place_object(event.pos, objects.objects)
+            player.place_object(event.pos, objects)
 
         # --- TU OBSŁUGUJEMY KLAWISZE ---
         if event.type == pygame.KEYDOWN:

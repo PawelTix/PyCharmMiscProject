@@ -2,16 +2,58 @@ import pygame
 from collections import deque
 
 
+class GameObject(pygame.sprite.Sprite):
+    """
+    Prosty sprite obiektu w grze.
+    kind: "triangle", "tall_rect", "long_rect", "wall", ...
+    rect: pygame.Rect – pozycja i rozmiar obiektu
+    """
+
+    def __init__(self, kind: str, rect: pygame.Rect):
+        super().__init__()
+        self.kind = kind
+        self.rect = rect.copy()
+
+        # Na razie generujemy prosty surface – logika rysowania i tak
+        # jest w ObjectManager.draw (trójkąty itp.).
+        self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+
+
 class ObjectManager:
     def __init__(self):
-        self.objects = []  # lista: (shape, rect)
+        # przechowujemy sprite’y w grupie
+        self.group = pygame.sprite.Group()
 
-    def add_object(self, shape, rect):
-        self.objects.append((shape, rect.copy()))
+    @property
+    def objects(self):
+        """Zachowujemy kompatybilny interfejs – zwraca listę sprite’ów."""
+        return list(self.group.sprites())
+
+    # =================== DODAWANIE / USUWANIE ===================
+
+    def add_object(self, shape: str, rect: pygame.Rect):
+        obj = GameObject(shape, rect)
+        self.group.add(obj)
+        return obj
+
+    def add_wall(self, rect: pygame.Rect):
+        return self.add_object("wall", rect)
+
+    def remove_at_point(self, pos):
+        x, y = pos
+        # od końca – żeby bezpiecznie usuwać
+        for obj in reversed(self.objects):
+            if obj.kind == "wall":
+                continue  # NIE pozwalamy usuwać ścian
+            if obj.rect.collidepoint(x, y):
+                self.group.remove(obj)
+                return True
+        return False
 
     # =================== LOGIKA POŁĄCZEŃ ===================
 
-    def _rect_connected(self, r1, r2):
+    @staticmethod
+    def _rect_connected(r1: pygame.Rect, r2: pygame.Rect) -> bool:
         """Czy dwa recty się łączą? (dotyk lub nachodzenie)"""
         if r1.colliderect(r2):
             return True
@@ -28,39 +70,29 @@ class ObjectManager:
 
         return False
 
-    def remove_at_point(self, pos):
-        x, y = pos
-        for i in range(len(self.objects) - 1, -1, -1):
-            shape, rect = self.objects[i]
-            if shape == "wall":
-                continue  # NIE pozwalamy usuwać ścian
-            if rect.collidepoint(x, y):
-                del self.objects[i]
-                return True
-        return False
-
-        return False
-
     def compute_powered(self):
         """Zwraca indeksy obiektów, które mają połączenie z elektrownią (triangle)."""
-        n = len(self.objects)
+        objs = self.objects
+        n = len(objs)
         if n == 0:
             return set()
 
         # Znajdź elektrownie
-        power_plants = [i for i, (shape, _) in enumerate(self.objects) if shape == "triangle"]
+        power_plants = [i for i, obj in enumerate(objs) if obj.kind == "triangle"]
         if not power_plants:
             return set()
 
         # Budujemy graf połączeń
         adj = [[] for _ in range(n)]
         for i in range(n):
-            si, ri = self.objects[i]
+            si = objs[i].kind
+            ri = objs[i].rect
             if si not in ("triangle", "tall_rect", "long_rect"):
                 continue
 
             for j in range(i + 1, n):
-                sj, rj = self.objects[j]
+                sj = objs[j].kind
+                rj = objs[j].rect
                 if sj not in ("triangle", "tall_rect", "long_rect"):
                     continue
 
@@ -87,14 +119,20 @@ class ObjectManager:
         if powered is None:
             powered = set()
 
-        for idx, (shape, rect) in enumerate(self.objects):
+        objs = self.objects
 
-            # --- WNĘTRZNE ŚCIANY ---
+        # --- WNĘTRZNE ŚCIANY ---
+        for obj in objs:
+            if obj.kind == "wall":
+                pygame.draw.rect(screen, (80, 80, 80), obj.rect)
+        # --- RESZTA OBIEKTÓW ---
+        for idx, obj in enumerate(objs):
+            shape = obj.kind
+            rect = obj.rect
+
             if shape == "wall":
-                pygame.draw.rect(screen, (80, 80, 80), rect)  # szara ściana
                 continue
 
-        for idx, (shape, rect) in enumerate(self.objects):
             # kolory bazowe
             if shape == "triangle":
                 base = (200, 180, 40)

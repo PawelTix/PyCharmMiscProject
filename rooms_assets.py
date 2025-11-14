@@ -1,6 +1,7 @@
 import pygame
 import random
 
+
 def asset_center_room(manager, width, height):
     """Kwadratowy mały pokój na środku, z drzwiami na dole."""
     WALL_THICKNESS = 20
@@ -17,19 +18,17 @@ def asset_center_room(manager, width, height):
     door_left = door_center_x - DOOR_SIZE // 2
     door_right = door_center_x + DOOR_SIZE // 2
 
-    manager.objects.append(("wall", pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS)))               # góra
-    manager.objects.append(("wall", pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT)))              # lewo
-    manager.objects.append(("wall", pygame.Rect(right - WALL_THICKNESS, top, WALL_THICKNESS, ROOM_HEIGHT)))  # prawo
+    manager.add_wall(pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS))               # góra
+    manager.add_wall(pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT))              # lewo
+    manager.add_wall(pygame.Rect(right - WALL_THICKNESS, top, WALL_THICKNESS, ROOM_HEIGHT))  # prawo
 
     # dół z przerwą na drzwi
     if door_left > left:
-        manager.objects.append(("wall",
-                                pygame.Rect(left, bottom - WALL_THICKNESS,
-                                            door_left - left, WALL_THICKNESS)))
+        manager.add_wall(pygame.Rect(left, bottom - WALL_THICKNESS,
+                                     door_left - left, WALL_THICKNESS))
     if door_right < right:
-        manager.objects.append(("wall",
-                                pygame.Rect(door_right, bottom - WALL_THICKNESS,
-                                            right - door_right, WALL_THICKNESS)))
+        manager.add_wall(pygame.Rect(door_right, bottom - WALL_THICKNESS,
+                                     right - door_right, WALL_THICKNESS))
 
 
 def asset_corner_room(manager, width, height):
@@ -48,19 +47,17 @@ def asset_corner_room(manager, width, height):
     door_left = door_center_x - DOOR_SIZE // 2
     door_right = door_center_x + DOOR_SIZE // 2
 
-    manager.objects.append(("wall", pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS)))                # góra
-    manager.objects.append(("wall", pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT)))               # lewo
-    manager.objects.append(("wall", pygame.Rect(right - WALL_THICKNESS, top, WALL_THICKNESS, ROOM_HEIGHT)))  # prawo
+    manager.add_wall(pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS))                # góra
+    manager.add_wall(pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT))               # lewo
+    manager.add_wall(pygame.Rect(right - WALL_THICKNESS, top, WALL_THICKNESS, ROOM_HEIGHT))  # prawo
 
     # dół z drzwiami
     if door_left > left:
-        manager.objects.append(("wall",
-                                pygame.Rect(left, bottom - WALL_THICKNESS,
-                                            door_left - left, WALL_THICKNESS)))
+        manager.add_wall(pygame.Rect(left, bottom - WALL_THICKNESS,
+                                     door_left - left, WALL_THICKNESS))
     if door_right < right:
-        manager.objects.append(("wall",
-                                pygame.Rect(door_right, bottom - WALL_THICKNESS,
-                                            right - door_right, WALL_THICKNESS)))
+        manager.add_wall(pygame.Rect(door_right, bottom - WALL_THICKNESS,
+                                     right - door_right, WALL_THICKNESS))
 
 
 def asset_cross_corridors(manager, width, height):
@@ -74,23 +71,18 @@ def asset_cross_corridors(manager, width, height):
     cy_bottom = height // 2 + CORRIDOR_WIDTH // 2
 
     # pion – duże bloki po bokach
-    manager.objects.append(("wall", pygame.Rect(0, 0, cx_left, height)))
-    manager.objects.append(("wall", pygame.Rect(cx_right, 0, width - cx_right, height)))
+    manager.add_wall(pygame.Rect(0, 0, cx_left, height))
+    manager.add_wall(pygame.Rect(cx_right, 0, width - cx_right, height))
 
     # poziom – bloki nad i pod
-    manager.objects.append(("wall", pygame.Rect(0, 0, width, cy_top)))
-    manager.objects.append(("wall", pygame.Rect(0, cy_bottom, width, height - cy_bottom)))
+    manager.add_wall(pygame.Rect(0, 0, width, cy_top))
+    manager.add_wall(pygame.Rect(0, cy_bottom, width, height - cy_bottom))
 
 
 ROOM_ASSETS = [asset_center_room, asset_corner_room, asset_cross_corridors]
 
 
 def apply_random_room_assets(rooms, width, height, skip=None):
-    """
-    Dla każdej komórki w tablicy rooms wybiera losowy asset i dokłada ściany.
-    `skip` – zbiór współrzędnych (x, y), dla których nie generujemy ścian
-    (np. pokój startowy).
-    """
     if skip is None:
         skip = set()
 
