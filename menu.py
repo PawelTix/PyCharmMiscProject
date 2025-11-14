@@ -8,17 +8,32 @@ class Menu:
         # zębatka
         self.gear_rect = pygame.Rect(10, 10, 40, 40)
 
-        # START
-        self.start_text = self.font.render("START", True, "white")
-        self.start_rect = self.start_text.get_rect(
-            center=(screen.get_width() // 2, screen.get_height() // 2)
-        )
-        self.bg_img = pygame.image.load("graphics/menue_bg.png")
-        self.bg_rect = self.bg_img.get_rect(
-            center=(screen.get_width() // 2, screen.get_height() // 2)
-        )
+        # START – niewidzialny przycisk na zielonym "Start" z tła
+        # (współczynniki 0.3 / 0.6 / 0.25 / 0.1 możesz potem lekko dostroić)
+        sw, sh = screen.get_width(), screen.get_height()
+        start_w = int(sw * 0.25)
+        start_h = int(sh * 0.10)
+        start_x = int(sw * 0.315)
+        start_y = int(sh * 0.54)
 
-        # mini menu
+        self.start_rect = pygame.Rect(0, 0, start_w, start_h)
+        self.start_rect.center = (start_x, start_y)
+
+        # opcjonalnie: jeśli chcesz, nadal możesz trzymać napis
+        self.start_text = self.font.render("START", True, "white")
+
+        # --- TŁO MENU ---
+        # 1) ładujemy oryginalny obraz
+        self.bg_img_original = pygame.image.load("graphics/menue_bg.png").convert()
+
+        # 2) skalujemy do rozmiaru ekranu
+        sw, sh = self.screen.get_size()
+        self.bg_img = pygame.transform.smoothscale(self.bg_img_original, (sw, sh))
+
+        # 3) tło od lewego górnego rogu
+        self.bg_rect = self.bg_img.get_rect(topleft=(0, 0))
+
+        # --- MINI MENU ---
         self.buttons = [
             {"label": "Skrzynka energetyczna", "shape": "triangle"},
             {"label": "Generator", "shape": "tall_rect"},
@@ -43,11 +58,10 @@ class Menu:
             y += bg.height + 10
 
     def draw_start_menu(self, mouse_pos):
-        hover = self.start_rect.collidepoint(mouse_pos)
-        color = (150, 150, 150) if hover else (100, 100, 100)
-        pygame.draw.rect(self.screen, color, self.start_rect.inflate(30, 20))
+        # najpierw tło na cały ekran
         self.screen.blit(self.bg_img, self.bg_rect)
-        self.screen.blit(self.start_text, self.start_rect)
+
+
 
     def draw_mini_menu(self, mouse_pos):
         # zębatka
