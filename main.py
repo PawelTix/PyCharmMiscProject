@@ -3,6 +3,10 @@ import sys
 from menu import Menu
 from player import Player
 from objects import ObjectManager
+from walls import draw_walls, handle_wall_collision
+
+
+
 
 #from assets import load_textures
 
@@ -103,33 +107,17 @@ while running:
                 # print dla testu:
                 # print("Usunięto obiekt?" , removed)
 
-
     if game_started:
         keys = pygame.key.get_pressed()
         player.move(keys, objects.objects, WIDTH, HEIGHT)
         player.update(objects.objects)
 
-        # zmiana pokoju
-        if player.rect.left <= 0 and room_x > 0:
-            room_x -= 1
-            objects = rooms[room_y][room_x]
-            player.rect.right = WIDTH - 10
+        # kolizje + ewentualna zmiana pokoju
+        prev_x, prev_y = room_x, room_y
+        room_x, room_y = handle_wall_collision(player, WIDTH, HEIGHT, room_x, room_y)
 
-        elif player.rect.right >= WIDTH and room_x < 2:
-            room_x += 1
+        if (room_x, room_y) != (prev_x, prev_y):
             objects = rooms[room_y][room_x]
-            player.rect.left = 10
-
-        elif player.rect.top <= 0 and room_y > 0:
-            room_y -= 1
-            objects = rooms[room_y][room_x]
-            player.rect.bottom = HEIGHT - 10
-
-        elif player.rect.bottom >= HEIGHT and room_y < 2:
-            room_y += 1
-            objects = rooms[room_y][room_x]
-            player.rect.top = 10
-
 
     # RYSOWANIE
     screen.fill((40, 40, 40))
@@ -137,15 +125,22 @@ while running:
     if not game_started:
         menu.draw_start_menu(mouse_pos)
     else:
+        # --- RYSOWANIE ŚCIAN (NOWOŚĆ) ---
+        draw_walls(screen, WIDTH, HEIGHT, room_x, room_y)
+
+        # --- OBIEKTY W POKOJU ---
         powered = objects.compute_powered()
         objects.draw(screen, powered)
 
+        # --- GHOST ---
         can_place = not player.ghost_collides(objects.objects)
         player.draw_ghost(screen, can_place)
 
+        # --- GRACZ & MENU ---
         player.draw(screen)
         menu.draw_mini_menu(mouse_pos)
 
+        # --- MINI MAPA ---
         draw_minimap(screen, rooms, room_x, room_y)
 
     pygame.display.update()
