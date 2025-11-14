@@ -7,8 +7,15 @@ class Menu:
         self.font = font
 
         # START button
+        self.img = pygame.image.load("graphics/menu_bg.png")
         self.start_text = self.font.render("START", True, "white")
         self.start_rect = self.start_text.get_rect(
+            center=(
+                self.screen.get_width() // 2,
+                self.screen.get_height() // 2
+            )
+        )
+        self.bg_rect = self.img.get_rect(
             center=(
                 self.screen.get_width() // 2,
                 self.screen.get_height() // 2
@@ -46,10 +53,13 @@ class Menu:
 
     def draw_start_menu(self, mouse_pos):
         """Rysuje ekran startowy"""
+
         hover = self.start_rect.collidepoint(mouse_pos)
         color = (100, 100, 100) if hover else (50, 50, 50)
         pygame.draw.rect(self.screen, color, self.start_rect.inflate(20, 10))
+        self.screen.blit(self.img, self.bg_rect)
         self.screen.blit(self.start_text, self.start_rect)
+
 
     def draw_mini_menu(self, mouse_pos):
         pygame.draw.rect(self.screen, (120, 120, 120), self.gear_rect)  # "zębatka"
