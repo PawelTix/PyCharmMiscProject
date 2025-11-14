@@ -13,6 +13,10 @@ class Menu:
         self.start_rect = self.start_text.get_rect(
             center=(screen.get_width() // 2, screen.get_height() // 2)
         )
+        self.bg_img = pygame.image.load("graphics/menue_bg.png")
+        self.bg_rect = self.bg_img.get_rect(
+            center=(screen.get_width() // 2, screen.get_height() // 2)
+        )
 
         # mini menu
         self.buttons = [
@@ -42,6 +46,7 @@ class Menu:
         hover = self.start_rect.collidepoint(mouse_pos)
         color = (150, 150, 150) if hover else (100, 100, 100)
         pygame.draw.rect(self.screen, color, self.start_rect.inflate(30, 20))
+        self.screen.blit(self.bg_img, self.bg_rect)
         self.screen.blit(self.start_text, self.start_rect)
 
     def draw_mini_menu(self, mouse_pos):
