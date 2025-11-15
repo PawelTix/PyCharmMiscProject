@@ -1,27 +1,40 @@
 import pygame
-#Dobra wersja
+
+
 class Menu:
     def __init__(self, screen, font):
         self.screen = screen
         self.font = font
 
-        # START button
-        self.img = pygame.image.load("graphics/menu_bg.png")
-        self.start_text = self.font.render("START", True, "white")
-        self.start_rect = self.start_text.get_rect(
-            center=(
-                self.screen.get_width() // 2,
-                self.screen.get_height() // 2
-            )
-        )
-        self.bg_rect = self.img.get_rect(
-            center=(
-                self.screen.get_width() // 2,
-                self.screen.get_height() // 2
-            )
-        )
+        # zębatka
+        self.gear_rect = pygame.Rect(10, 10, 40, 40)
 
-        # Mini menu buttons
+        # START – niewidzialny przycisk na zielonym "Start" z tła
+        # (współczynniki 0.3 / 0.6 / 0.25 / 0.1 możesz potem lekko dostroić)
+        sw, sh = screen.get_width(), screen.get_height()
+        start_w = int(sw * 0.25)
+        start_h = int(sh * 0.10)
+        start_x = int(sw * 0.315)
+        start_y = int(sh * 0.54)
+
+        self.start_rect = pygame.Rect(0, 0, start_w, start_h)
+        self.start_rect.center = (start_x, start_y)
+
+        # opcjonalnie: jeśli chcesz, nadal możesz trzymać napis
+        self.start_text = self.font.render("START", True, "white")
+
+        # --- TŁO MENU ---
+        # 1) ładujemy oryginalny obraz
+        self.bg_img_original = pygame.image.load("graphics/menue_bg.png").convert()
+
+        # 2) skalujemy do rozmiaru ekranu
+        sw, sh = self.screen.get_size()
+        self.bg_img = pygame.transform.smoothscale(self.bg_img_original, (sw, sh))
+
+        # 3) tło od lewego górnego rogu
+        self.bg_rect = self.bg_img.get_rect(topleft=(0, 0))
+
+        # --- MINI MENU ---
         self.buttons = [
             {"label": "Generator", "shape": "triangle"},
             {"label": "Skrzynka energetyczna", "shape": "tall_rect"},
@@ -46,14 +59,8 @@ class Menu:
             y += bg.height + 10
 
     def draw_start_menu(self, mouse_pos):
-        """Rysuje ekran startowy"""
-
-        hover = self.start_rect.collidepoint(mouse_pos)
-        color = (100, 100, 100) if hover else (50, 50, 50)
-        pygame.draw.rect(self.screen, color, self.start_rect.inflate(20, 10))
-        self.screen.blit(self.img, self.bg_rect)
-        self.screen.blit(self.start_text, self.start_rect)
-
+        # najpierw tło na cały ekran
+        self.screen.blit(self.bg_img, self.bg_rect)
 
     def draw_mini_menu(self, mouse_pos):
         # zębatka
