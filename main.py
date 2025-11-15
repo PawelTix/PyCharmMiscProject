@@ -51,6 +51,8 @@ def draw_minimap(screen, rooms, rx, ry):
             border = (255, 255, 0) if (x == rx and y == ry) else (180, 180, 180)
             pygame.draw.rect(screen, border, r, 2)
 
+
+
 # --- Pokoje 3x3 ---
 rooms = [[ObjectManager() for _ in range(3)] for _ in range(3)]
 room_x, room_y = 1, 2
@@ -90,6 +92,26 @@ for ry in range(len(rooms)):           # liczba wierszy
         rect.center = (spot_x, spot_y)
         manager.add_object("triangle", rect)
 
+        # ================== RĘCZNY ZESTAW STARTOWY W POKOJU STARTOWYM ==================
+        # Zakładam, że room_x, room_y na starcie wskazują pokój startowy (np. 1,1)
+        start_rx, start_ry = room_x, room_y
+        start_manager = rooms[start_ry][start_rx]
+
+        # rozmiary zgodne z player.shape_sizes:
+        TALL_W, TALL_H = 30, 70  # generator / skrzynka (tall_rect)
+        TRI_W, TRI_H = 40, 40  # powerplant (triangle)
+
+        # powerplant (triangle) – np. po lewej stronie pokoju
+        pp_rect = pygame.Rect(0, 0, TRI_W, TRI_H)
+        pp_rect.center = (WIDTH // 2 - 150, HEIGHT // 2)
+        start_manager.add_object("triangle", pp_rect)
+
+        # generator / skrzynka (tall_rect) – np. po prawej stronie pokoju
+        gen_rect = pygame.Rect(0, 0, TALL_W, TALL_H)
+        gen_rect.center = (WIDTH // 2 + 125, HEIGHT // 2)
+        start_manager.add_object("tall_rect", gen_rect)
+        # ==================================================================
+
 # -------- MAIN LOOP --------
 
 running = True
@@ -113,13 +135,12 @@ while running:
                 pygame.mixer.music.load("muzyka/dzwiek pokoju1.mp3")
                 pygame.mixer.music.play(-1)
                 game_started = True
-                uranek.say("Cześć! Jestem Uranek.\nMusisz podłączyć generatory do szkrzynek elektrycznych używając kabli, aby otworzyć przejście do kolejnego pokoju.", 6000)
+                uranek.say("Cześć! Jestem Uranek.\nPomogę Ci podłączyć prąd w elektrowni.", 6000)
             continue
 
         # mini-menu
         res = menu.handle_event(event)
         if res in ("triangle", "tall_rect", "long_rect"):
-            uranek.say("Widzisz ten Generator? Musiz podłączyć go do prądu, aby zasilić pokój")
             player.change_shape(res)
 
         # stawianie obiektów PPM
