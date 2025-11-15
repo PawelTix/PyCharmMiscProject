@@ -81,7 +81,7 @@ while running:
                 pygame.mixer.music.load("muzyka/dzwiek pokoju1.mp3")
                 pygame.mixer.music.play(-1)
                 game_started = True
-                uranek.say("Cześć! Jestem Uranek.\nPomogę Ci podłączyć prąd w elektrowni.", 6000)
+                uranek.say("Cześć! Jestem Uranek.\nMusisz podłączyć generatory do szkrzynek elektrycznych używając kabli, aby otworzyć przejście do kolejnego pokoju.", 6000)
             continue
 
         # mini-menu
