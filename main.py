@@ -26,6 +26,7 @@ font = pygame.font.Font(None, 50)
 small_font = pygame.font.Font(None, 30)
 
 menu = Menu(screen, font)
+pygame.mixer_music.load("muzyka/dzwiek2.mp3")
 player = Player(WIDTH // 2, HEIGHT // 2, animations)
 
 def draw_minimap(screen, rooms, rx, ry):
@@ -58,7 +59,7 @@ game_started = False
 
 running = True
 game_started = False
-
+pygame.mixer.music.play(-1)
 while running:
     dt = clock.tick(FPS)
     mouse_pos = pygame.mouse.get_pos()
@@ -69,6 +70,10 @@ while running:
 
         if not game_started:
             if menu.handle_event(event) == "start":
+                pygame.mixer.music.stop()
+                pygame.mixer.music.unload()
+                pygame.mixer.music.load("muzyka/dzwiek1.mp3")
+                pygame.mixer.music.play(-1)
                 game_started = True
             continue
 
