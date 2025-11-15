@@ -102,13 +102,22 @@ while running:
     powered_indices = current_manager.compute_powered()
     objs = current_manager.objects
 
-    # Czy w tym pokoju jest zasilony GENERATOR (tall_rect podłączony do triangle)?
-    generator_powered = any(
-        0 <= i < len(objs) and objs[i].kind == "tall_rect"
-        for i in powered_indices
-    )
+    generator_powered = False
+    for i in powered_indices:
+        if 0 <= i < len(objs):
+            obj = objs[i]
 
-    # Ustawiamy stan drzwi dla TEGO pokoju
+            # spróbuj wziąć typ z atrybutu .kind
+            kind = getattr(obj, "kind", None)
+
+            # jeśli to krotka typu ("tall_rect", rect, ...) – weź pierwszy element
+            if kind is None and isinstance(obj, tuple) and len(obj) > 0:
+                kind = obj[0]
+
+            if kind == "tall_rect":
+                generator_powered = True
+                break
+
     electric_doors.set_room_powered(room_x, room_y, generator_powered)
 
     if game_started:
