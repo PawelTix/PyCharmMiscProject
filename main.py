@@ -4,11 +4,10 @@ import random
 from menu import Menu
 from player import Player, animations
 from objects import ObjectManager
-from walls import draw_walls, handle_wall_collision
+from walls import draw_walls
 from rooms_assets import apply_random_room_assets
 from ghost import update_ghost
-
-#from assets import load_textures
+from electric_doors import electric_doors
 
 WIDTH, HEIGHT = 1080, 800
 FPS = 60
@@ -99,6 +98,19 @@ while running:
                 # print dla testu:
                 # print("Usunięto obiekt?" , removed)
 
+    current_manager = rooms[room_y][room_x]
+    powered_indices = current_manager.compute_powered()
+    objs = current_manager.objects
+
+    # Czy w tym pokoju jest zasilony GENERATOR (tall_rect podłączony do triangle)?
+    generator_powered = any(
+        0 <= i < len(objs) and objs[i].kind == "tall_rect"
+        for i in powered_indices
+    )
+
+    # Ustawiamy stan drzwi dla TEGO pokoju
+    electric_doors.set_room_powered(room_x, room_y, generator_powered)
+
     if game_started:
         keys = pygame.key.get_pressed()
         player.update(dt, keys)
@@ -106,7 +118,8 @@ while running:
 
         # kolizje + ewentualna zmiana pokoju
         prev_x, prev_y = room_x, room_y
-        room_x, room_y = handle_wall_collision(player, WIDTH, HEIGHT, room_x, room_y)
+
+        room_x, room_y = electric_doors.handle_collision(player, WIDTH, HEIGHT, room_x, room_y)
 
         if (room_x, room_y) != (prev_x, prev_y):
             objects = rooms[room_y][room_x]
