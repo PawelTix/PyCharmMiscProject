@@ -5,33 +5,92 @@ import random
 def _add_wall(manager, rect: pygame.Rect):
     manager.add_wall(rect)
 
-def asset_center_room(manager, width, height):
-    """Kwadratowy mały pokój na środku, z drzwiami na dole."""
-    WALL_THICKNESS = 20
-    ROOM_WIDTH = width // 2
-    ROOM_HEIGHT = height // 2
-    DOOR_SIZE = 160
+def third_map_asset(manager, width, height):
+    WALL = 20
 
-    left = (width - ROOM_WIDTH) // 2
-    top = (height - ROOM_HEIGHT) // 2
-    right = left + ROOM_WIDTH
-    bottom = top + ROOM_HEIGHT
+    left   = 0
+    right  = width
+    top    = 0
+    bottom = height
 
-    door_center_x = width // 2
-    door_left = door_center_x - DOOR_SIZE // 2
-    door_right = door_center_x + DOOR_SIZE // 2
+    W = right - left
+    H = bottom - top
 
-    manager.add_wall(pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS))                     # góra
-    manager.add_wall(pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT))                    # lewo
-    manager.add_wall(pygame.Rect(right - WALL_THICKNESS, top, WALL_THICKNESS, ROOM_HEIGHT))  # prawo
+    # Kluczowe proporcje odwzorowane z rysunku
+    x_left_inner  = int(0.28 * W)   # pionowa lewa wewnętrzna
+    x_mid_short   = int(0.64 * W)   # środkowa pionowa krótka
+    x_right_inner = int(0.78 * W)   # pionowa prawa
 
-    # dół z przerwą na drzwi
-    if door_left > left:
-        manager.add_wall(pygame.Rect(left, bottom - WALL_THICKNESS,
-                                     door_left - left, WALL_THICKNESS))
-    if door_right < right:
-        manager.add_wall(pygame.Rect(door_right, bottom - WALL_THICKNESS,
-                                     right - door_right, WALL_THICKNESS))
+    y_mid_h1      = int(0.3 * H)   # górna wewnętrzna pozioma
+    y_mid_h2      = int(0.67 * H)   # dolna wewnętrzna pozioma
+    y_bottom_short= int(0.87 * H)   # pionowa dolna krótka
+
+    # ==== LEWA WEWNĘTRZNA PIONOWA ====
+    _add_wall(manager, pygame.Rect(
+        x_left_inner, top,
+        WALL, int(0.5 * H)
+    ))
+
+    # ==== POZIOMA ZE ŚRODKA LEWEJ PIONOWEJ ====
+    _add_wall(manager, pygame.Rect(
+        x_left_inner, y_mid_h1,
+        int(0.3 * W), WALL
+    ))
+
+    # ==== LEWA KRÓTKA POZIOMA (drzwi) ====
+    _add_wall(manager, pygame.Rect(
+        left, y_mid_h2,
+        int(0.2 * W), WALL
+    ))
+
+    # ==== DUŻA ŚRODKOWA POZIOMA ====
+    _add_wall(manager, pygame.Rect(
+        x_left_inner, y_mid_h2,
+        x_right_inner - x_left_inner, WALL
+    ))
+
+    # ==== KRÓTKA PIONOWA ZE ŚRODKA POZIOMEJ ====
+    _add_wall(manager, pygame.Rect(
+        x_mid_short, y_mid_h2,
+        WALL, int(0.18 * H)
+    ))
+
+    # ==== DOLNA PIONOWA KRÓTKA ====
+    _add_wall(manager, pygame.Rect(
+        int(0.35 * W), y_bottom_short,
+        WALL, bottom - y_bottom_short
+    ))
+
+    # ==== PRAWA POZIOMA KRÓTKA (drzwi) ====
+    _add_wall(manager, pygame.Rect(
+        x_right_inner, y_mid_h1,
+        int(0.1 * W), WALL
+    ))
+
+    # ==== PRAWA PIONOWA Z DRZWIAMI NA WYSOKOŚCI y_mid_h2 ====
+    door_height = int(0.12* H)  # wysokość otworu drzwi
+    door_center = y_mid_h2 +100  # środek drzwi = pozioma ściana
+    door_top = door_center - door_height // 2
+    door_bottom = door_top + door_height
+
+    # górny kawałek prawej ściany
+    if door_top > top:
+        _add_wall(manager, pygame.Rect(
+            x_right_inner,
+            top,
+            WALL,
+            door_top - top
+        ))
+
+    # dolny kawałek prawej ściany
+    if bottom > door_bottom:
+        _add_wall(manager, pygame.Rect(
+            x_right_inner,
+            door_bottom,
+            WALL,
+            bottom - door_bottom
+        ))
+
 
 
 def second_map_asset(manager, width, height):
@@ -170,7 +229,7 @@ def first_map_asset(manager, width, height):
         y_top_inner - top
     ))
 
-    # prawy wewnętrzny pion – z DRZWIAMI mniej więcej na wysokości postaci
+    # prawy wewnętrzny pion – z DRZWIAMI
     door_height_main = int(0.12 * H)            # wysokość otworu
     door_center_main = int(top + 0.55 * H)      # położenie drzwi (środek)
 
@@ -239,7 +298,7 @@ def first_map_asset(manager, width, height):
         y_bottom_right_end - y_bottom_right_top
     ))
 
-ROOM_ASSETS = [second_map_asset, first_map_asset]
+ROOM_ASSETS = [third_map_asset, second_map_asset, first_map_asset]
 
 
 def apply_random_room_assets(rooms, width, height, skip=None):
