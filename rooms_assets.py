@@ -34,35 +34,73 @@ def asset_center_room(manager, width, height):
                                      right - door_right, WALL_THICKNESS))
 
 
-def asset_corner_room(manager, width, height):
-    """Mały pokój w lewym górnym rogu z drzwiami do środka."""
-    WALL_THICKNESS = 20
-    ROOM_WIDTH = width // 3
-    ROOM_HEIGHT = height // 3
-    DOOR_SIZE = 120
+def second_map_asset(manager, width, height):
+    WALL = 20
 
-    left = 120
-    top = 120
-    right = left + ROOM_WIDTH
-    bottom = top + ROOM_HEIGHT
+    left   = 0
+    right  = width
+    top    = 0
+    bottom = height
 
-    door_center_x = left + ROOM_WIDTH // 2
-    door_left = door_center_x - DOOR_SIZE // 2
-    door_right = door_center_x + DOOR_SIZE // 2
+    W = right - left
+    H = bottom - top
 
-    manager.add_wall(pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS))                # góra
-    manager.add_wall(pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT))               # lewo
-    manager.add_wall(pygame.Rect(right - WALL_THICKNESS, top, WALL_THICKNESS, ROOM_HEIGHT))  # prawo
+    # poprawione proporcje
+    x_left_inner   = int(0.35 * W)   # lewa pionowa ściana
+    x_stub         = int(0.70 * W)   # pionowa odnoga z poziomej  (bardziej w lewo!)
+    x_vertical_mid = int(0.7 * W)   # dolna pionowa po prawej   (bardziej w prawo!)
+    x_right_short  = int(0.87 * W)   # krótka pozioma przy prawej ścianie
 
-    # dół z drzwiami
-    if door_left > left:
-        manager.add_wall(pygame.Rect(left, bottom - WALL_THICKNESS,
-                                     door_left - left, WALL_THICKNESS))
-    if door_right < right:
-        manager.add_wall(pygame.Rect(door_right, bottom - WALL_THICKNESS,
-                                     right - door_right, WALL_THICKNESS))
+    y_horizontal   = int(0.31* H)   # główna pozioma ściana
+    y_bottom_line  = int(0.68 * H)   # dolne poziome
+    y_vert_top     = int(0.55 * H)   # start dolnej pionowej
+    stub_height    = int(0.13 * H)
 
-def first_map_assest(manager, width, height):
+    # --- lewa pionowa ---
+    _add_wall(manager, pygame.Rect(
+        x_left_inner, top,
+        WALL, y_bottom_line - top
+    ))
+
+    # --- dwa dolne poziome w lewym pokoju ---
+
+    seg1_end = int(0.18 * W)
+    _add_wall(manager, pygame.Rect(
+        left, y_bottom_line,
+        seg1_end - left, WALL
+    ))
+
+    seg2_start = int(0.26 * W)
+    _add_wall(manager, pygame.Rect(
+        seg2_start, y_bottom_line,
+        x_left_inner - seg2_start, WALL
+    ))
+
+    # --- główna pozioma ---
+    _add_wall(manager, pygame.Rect(
+        x_left_inner, y_horizontal,
+        x_stub - x_left_inner, WALL
+    ))
+
+    # --- pionowa odnoga (L-ka) ---
+    _add_wall(manager, pygame.Rect(
+        x_stub, y_horizontal,
+        WALL, stub_height
+    ))
+
+    # --- krótka pozioma przy prawej ---
+    _add_wall(manager, pygame.Rect(
+        x_right_short, y_horizontal,
+        right - x_right_short, WALL
+    ))
+
+    # --- dolna pionowa po prawej ---
+    _add_wall(manager, pygame.Rect(
+        x_vertical_mid, y_vert_top,
+        WALL, bottom - y_vert_top
+    ))
+
+def first_map_asset(manager, width, height):
     """
     Układ inspirowany szkicem:
     - dwa pokoje po lewej u góry z przerwą na drzwi
@@ -201,7 +239,7 @@ def first_map_assest(manager, width, height):
         y_bottom_right_end - y_bottom_right_top
     ))
 
-ROOM_ASSETS = [first_map_assest, asset_corner_room, asset_center_room]
+ROOM_ASSETS = [second_map_asset, first_map_asset]
 
 
 def apply_random_room_assets(rooms, width, height, skip=None):
