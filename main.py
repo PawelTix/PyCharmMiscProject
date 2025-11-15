@@ -86,6 +86,12 @@ while running:
         # mini-menu
         res = menu.handle_event(event)
         if res in ("triangle", "tall_rect", "long_rect"):
+            if res == "triangle":
+                uranek.say("postaw generator")
+            elif res == "tall_rect":
+                uranek.say("postaw skrzynke")
+            elif res == "long_rect":
+                uranek.say("postaw kabel")
             player.change_shape(res)
 
         # stawianie obiektów PPM
