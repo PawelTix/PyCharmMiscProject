@@ -5,7 +5,6 @@ ASSETS_FOLDER = "assets"
 
 # mapowanie "typu obiektu" na nazwę pliku
 SPRITE_FILES = {
-    "player":    "player.png",      # gracz
     "triangle":  "powerplant.png",  # elektrownia
     "tall_rect": "house.png",       # domek
     "long_rect": "cable.png",       # kabel
