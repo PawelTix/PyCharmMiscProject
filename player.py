@@ -44,7 +44,7 @@ class Player(pygame.sprite.Sprite):
         self.uranek = uranek
 
         # ruch – px / ms (dt z clock.tick(FPS) jest w ms)
-        self.speed = 0.5          # ~0.5 px na 1 ms → ~30 px / klatkę przy 60 FPS
+        self.speed = 0.3          # ~0.5 px na 1 ms → ~30 px / klatkę przy 60 FPS
         self.anim_speed = 0.01    # "częstotliwość" animacji
         self.anim_timer = 0
 
