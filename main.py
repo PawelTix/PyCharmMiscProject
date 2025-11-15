@@ -10,7 +10,7 @@ from ghost import update_ghost
 from uranek import Uranek
 from generator_spawns import generator_spawns
 from electric_doors import ElectricDoorSystem
-#from assets import load_textures
+from powerplant_spawns import powerplant_spawns
 
 
 WIDTH, HEIGHT = 1080, 800
@@ -72,6 +72,23 @@ for ry in range(len(rooms)):           # liczba wierszy
         rect.center = (spot_x, spot_y)
         manager.add_object("tall_rect", rect)
 
+# rozmiar triangle – dopasowany do shape_sizes["triangle"] (40x40 u Ciebie)
+TRI_W, TRI_H = 40, 40
+
+for ry in range(len(rooms)):           # liczba wierszy
+    for rx in range(len(rooms[0])):    # liczba kolumn
+        manager = rooms[ry][rx]
+
+        spots = powerplant_spawns.get_spots((rx, ry))
+        if not spots:
+            continue  # w tym pokoju nie ustawiliśmy spotów
+
+        # 1 generator losowo z dwóch możliwych miejsc:
+        spot_x, spot_y = random.choice(spots)
+
+        rect = pygame.Rect(0, 0, TRI_W, TRI_H)
+        rect.center = (spot_x, spot_y)
+        manager.add_object("triangle", rect)
 
 # -------- MAIN LOOP --------
 

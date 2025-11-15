@@ -1,6 +1,7 @@
 import pygame
 import random
 from generator_spawns import generator_spawns
+from powerplant_spawns import powerplant_spawns
 # === MAŁY HELPER, KTÓREGO BRAKUJE ===
 def _add_wall(manager, rect: pygame.Rect):
     manager.add_wall(rect)
@@ -99,6 +100,13 @@ def third_map_asset(manager, width, height, room_x, room_y):
 
         generator_spawns.set_spots((room_x, room_y), [spot1, spot2])
 
+        # ================== MIEJSCA NA GENERATOR ==================
+        # przykładowo: jedno miejsce w lewej części, drugie w prawej
+        gen_spot1 = (int(0.335 * width), int(0.925 * height))
+        gen_spot2 = (int(0.76 * width), int(0.645 * height))
+
+        powerplant_spawns.set_spots((room_x, room_y), [gen_spot1, gen_spot2])
+
 def second_map_asset(manager, width, height, room_x, room_y):
     WALL = 20
 
@@ -172,6 +180,14 @@ def second_map_asset(manager, width, height, room_x, room_y):
     spot2 = (int(0.05 * width), int(0.80 * height))
 
     generator_spawns.set_spots((room_x, room_y), [spot1, spot2])
+
+    # ================== MIEJSCA NA GENERATOR ==================
+    # przykładowo: jedno miejsce w lewej części, drugie w prawej
+    gen_spot1 = (int(0.335 * width), int(0.655 * height))
+    gen_spot2 = (int(0.68 * width), int(0.36 * height))
+
+    powerplant_spawns.set_spots((room_x, room_y), [gen_spot1, gen_spot2])
+
 
 def first_map_asset(manager, width, height, room_x, room_y):
     """
@@ -320,7 +336,14 @@ def first_map_asset(manager, width, height, room_x, room_y):
     spot2 = (int(0.70 * width), int(0.75 * height))
     generator_spawns.set_spots((room_x, room_y), [spot1,spot2])
 
-ROOM_ASSETS = [first_map_asset, second_map_asset, third_map_asset]
+    # ================== MIEJSCA NA GENERATOR ==================
+    # przykładowo: jedno miejsce w lewej części, drugie w prawej
+    gen_spot1 = (int(0.335 * width), int(0.925 * height))
+    gen_spot2 = (int(0.745 * width), int(0.655 * height))
+
+    powerplant_spawns.set_spots((room_x, room_y), [gen_spot1, gen_spot2])
+
+ROOM_ASSETS = [second_map_asset]
 
 
 def apply_random_room_assets(rooms, width, height, skip=None):
