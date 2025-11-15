@@ -28,7 +28,7 @@ class ElectricDoorSystem:
                 "up": False,
                 "down": False,
             }
-            self.uranek.say("podłącz wszystkie skrzynki elektryczne do prądu",4)
+            self.uranek.say("podłącz wszystkie skrzynki elektryczne do prądu",4000)
         return self._open[key]
 
     # ---------- API zasilania pokoju ----------
