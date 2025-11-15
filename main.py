@@ -9,7 +9,7 @@ from rooms_assets import apply_random_room_assets
 from ghost import update_ghost
 from uranek import Uranek
 from electric_doors import electric_doors
-#from assets import load_textures
+from generator_spawns import generator_spawns
 
 
 WIDTH, HEIGHT = 1080, 800
@@ -56,6 +56,19 @@ objects = rooms[room_y][room_x]
 
 # losowe układy ścian wewnętrznych
 apply_random_room_assets(rooms, WIDTH, HEIGHT, skip={(room_x, room_y)})
+
+TALL_W, TALL_H = 30, 70
+for ry in range(len(rooms)):           # liczba wierszy
+    for rx in range(len(rooms[0])):    # liczba kolumn
+        manager = rooms[ry][rx]
+        spots = generator_spawns.get_spots((rx, ry))
+        if not spots:
+            continue
+        spot_x, spot_y = random.choice(spots)
+        rect = pygame.Rect(0, 0, TALL_W, TALL_H)
+        rect.center = (spot_x, spot_y)
+        manager.add_object("tall_rect", rect)
+
 
 # -------- MAIN LOOP --------
 

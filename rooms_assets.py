@@ -1,11 +1,11 @@
 import pygame
 import random
-
+from generator_spawns import generator_spawns
 # === MAŁY HELPER, KTÓREGO BRAKUJE ===
 def _add_wall(manager, rect: pygame.Rect):
     manager.add_wall(rect)
 
-def third_map_asset(manager, width, height):
+def third_map_asset(manager, width, height, room_x, room_y):
     WALL = 20
 
     left   = 0
@@ -91,9 +91,15 @@ def third_map_asset(manager, width, height):
             bottom - door_bottom
         ))
 
+        # ================== MIEJSCA NA GENERATORY ==================
+        # przykładowo: jedno bardziej po lewej u góry, drugie po prawej na dole
 
+        spot1 = (int(0.25 * width), int(0.30 * height))
+        spot2 = (int(0.70 * width), int(0.75 * height))
 
-def second_map_asset(manager, width, height):
+        generator_spawns.set_spots((room_x, room_y), [spot1, spot2])
+
+def second_map_asset(manager, width, height, room_x, room_y):
     WALL = 20
 
     left   = 0
@@ -159,7 +165,15 @@ def second_map_asset(manager, width, height):
         WALL, bottom - y_vert_top
     ))
 
-def first_map_asset(manager, width, height):
+    # ================== MIEJSCA NA GENERATORY ==================
+    # przykładowo: jedno bardziej po lewej u góry, drugie po prawej na dole
+
+    spot1 = (int(0.383 * width), int(0.265 * height))
+    spot2 = (int(0.05 * width), int(0.80 * height))
+
+    generator_spawns.set_spots((room_x, room_y), [spot1, spot2])
+
+def first_map_asset(manager, width, height, room_x, room_y):
     """
     Układ inspirowany szkicem:
     - dwa pokoje po lewej u góry z przerwą na drzwi
@@ -298,7 +312,15 @@ def first_map_asset(manager, width, height):
         y_bottom_right_end - y_bottom_right_top
     ))
 
-ROOM_ASSETS = [third_map_asset, second_map_asset, first_map_asset]
+    # ================== MIEJSCA NA GENERATORY ==================
+    # przykładowo: jedno bardziej po lewej u góry, drugie po prawej na dole
+
+
+    spot1 = (int(0.26 * width), int(0.05 * height))
+    spot2 = (int(0.70 * width), int(0.75 * height))
+    generator_spawns.set_spots((room_x, room_y), [spot1,spot2])
+
+ROOM_ASSETS = [first_map_asset, second_map_asset, third_map_asset]
 
 
 def apply_random_room_assets(rooms, width, height, skip=None):
@@ -310,4 +332,4 @@ def apply_random_room_assets(rooms, width, height, skip=None):
             if (rx, ry) in skip:
                 continue
             layout_fn = random.choice(ROOM_ASSETS)
-            layout_fn(rooms[ry][rx], width, height)
+            layout_fn(rooms[ry][rx], width, height, rx, ry)
