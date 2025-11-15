@@ -119,7 +119,7 @@ while running:
         # mini-menu
         res = menu.handle_event(event)
         if res in ("triangle", "tall_rect", "long_rect"):
-                uranek.say("Widzisz ten Generator? Musiz podłączyć go do prądu, aby zasilić pokój")
+            uranek.say("Widzisz ten Generator? Musiz podłączyć go do prądu, aby zasilić pokój")
             player.change_shape(res)
 
         # stawianie obiektów PPM
