@@ -7,6 +7,7 @@ from objects import ObjectManager
 from walls import draw_walls, handle_wall_collision
 from rooms_assets import apply_random_room_assets
 from ghost import update_ghost
+from uranek import Uranek
 
 #from assets import load_textures
 
@@ -25,8 +26,11 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 50)
 small_font = pygame.font.Font(None, 30)
 
+# --- URANEK ---
+uranek = Uranek(screen.get_rect())
+
 menu = Menu(screen, font)
-pygame.mixer_music.load("muzyka/dzwiek2.mp3")
+pygame.mixer_music.load("muzyka/tralala.mp3")
 player = Player(WIDTH // 2, HEIGHT // 2, animations)
 
 def draw_minimap(screen, rooms, rx, ry):
@@ -64,6 +68,7 @@ while running:
     dt = clock.tick(FPS)
     mouse_pos = pygame.mouse.get_pos()
 
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -75,6 +80,7 @@ while running:
                 pygame.mixer.music.load("muzyka/dzwiek1.mp3")
                 pygame.mixer.music.play(-1)
                 game_started = True
+                uranek.say("Cześć! Jestem Uranek.\nPomogę Ci podłączyć prąd w elektrowni.", 6000)
             continue
 
         # mini-menu
@@ -108,6 +114,7 @@ while running:
         keys = pygame.key.get_pressed()
         player.update(dt, keys)
         update_ghost(player, objects.objects)
+        uranek.update(dt)
 
         # kolizje + ewentualna zmiana pokoju
         prev_x, prev_y = room_x, room_y
@@ -139,6 +146,9 @@ while running:
 
         # --- MINI MAPA ---
         draw_minimap(screen, rooms, room_x, room_y)
+
+        # --- URANEK PODPOWIADA ---
+        uranek.draw(screen)
 
     pygame.display.update()
 
