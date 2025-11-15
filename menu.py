@@ -35,8 +35,8 @@ class Menu:
 
         # --- MINI MENU ---
         self.buttons = [
-            {"label": "Skrzynka energetyczna", "shape": "triangle"},
-            {"label": "Generator", "shape": "tall_rect"},
+            {"label": "Generator", "shape": "triangle"},
+            {"label": "Skrzynka energetyczna", "shape": "tall_rect"},
             {"label": "Kabel", "shape": "long_rect"},
         ]
         self.mini_menu_visible = False

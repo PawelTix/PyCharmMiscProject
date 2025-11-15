@@ -8,7 +8,7 @@ from walls import draw_walls
 from rooms_assets import apply_random_room_assets
 from ghost import update_ghost
 from uranek import Uranek
-from electric_doors import electric_doors
+from electric_doors import ElectricDoorSystem
 #from assets import load_textures
 
 
@@ -33,6 +33,7 @@ uranek = Uranek(screen.get_rect())
 menu = Menu(screen, font)
 pygame.mixer_music.load("muzyka/tralala.mp3")
 player = Player(WIDTH // 2, HEIGHT // 2, animations,uranek)
+electric_doors = ElectricDoorSystem(uranek, grid_w=3, grid_h=3)
 
 def draw_minimap(screen, rooms, rx, ry):
     cell = MINIMAP_SIZE // 3
