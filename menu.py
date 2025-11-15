@@ -1,5 +1,5 @@
 import pygame
-
+#Dobra wersja
 class Menu:
     def __init__(self, screen, font):
         self.screen = screen
