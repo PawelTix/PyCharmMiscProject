@@ -1,185 +1,211 @@
 import pygame
 import sys
+import random
 from menu import Menu
-from player import Player
+from player import Player, animations
 from objects import ObjectManager
-from cables import CableManager
+from walls import draw_walls
+from rooms_assets import apply_random_room_assets
+from ghost import update_ghost
+from uranek import Uranek
+from generator_spawns import generator_spawns
+from electric_doors import ElectricDoorSystem
+from powerplant_spawns import powerplant_spawns
 
-# --- Ustawienia ---
-WIDTH, HEIGHT = 1920, 1080
+
+WIDTH, HEIGHT = 1080, 800
 FPS = 60
-MINIMAP_SIZE = 200   # była 120 – teraz większa
-MINIMAP_MARGIN = 20  # odstęp od prawej/górnej krawędzi
-cable_mgr = CableManager(max_conn_distance=80)  # dostosuj do długości long_rect
+MINIMAP_SIZE = 200
+MINIMAP_MARGIN = 20
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Modularna Gra Pygame")
-clock = pygame.time.Clock()
 
-# fonty
+#textures = load_textures()
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Night Shift")
+clock = pygame.time.Clock()
 font = pygame.font.Font(None, 50)
 small_font = pygame.font.Font(None, 30)
 
-# --- Moduły ---
+# --- URANEK ---
+uranek = Uranek(screen.get_rect())
+
 menu = Menu(screen, font)
-player = Player(start_pos=(WIDTH // 2, HEIGHT // 2))
+pygame.mixer_music.load("muzyka/dzwiek menu.mp3")
+player = Player(WIDTH // 2, HEIGHT // 2, animations,uranek)
+electric_doors = ElectricDoorSystem(uranek, grid_w=3, grid_h=3)
+
+def draw_minimap(screen, rooms, rx, ry):
+    cell = MINIMAP_SIZE // 3
+    ox = WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
+    oy = MINIMAP_MARGIN
+
+    for y in range(3):
+        for x in range(3):
+            r = pygame.Rect(ox + x * cell, oy + y * cell, cell - 3, cell - 3)
+
+            fill = (60, 60, 60) if not rooms[y][x].objects else (90, 90, 130)
+            pygame.draw.rect(screen, fill, r)
+
+            border = (255, 255, 0) if (x == rx and y == ry) else (180, 180, 180)
+            pygame.draw.rect(screen, border, r, 2)
 
 # --- Pokoje 3x3 ---
-# rooms[y][x] = ObjectManager dla danego pokoju
 rooms = [[ObjectManager() for _ in range(3)] for _ in range(3)]
-
-# zaczynamy w środkowym pokoju (1,1)
-# zaczynamy w dolnym środkowym pokoju (1,2)
 room_x, room_y = 1, 2
 objects = rooms[room_y][room_x]
 
-# Aktualizujemy listę kabli na podstawie obiektów w aktualnym pokoju
-cable_mgr.sync_from_objects(objects.objects)
+# losowe układy ścian wewnętrznych
+apply_random_room_assets(rooms, WIDTH, HEIGHT, skip={(room_x, room_y)})
 
-# Źródła prądu i odbiorniki (później to zmienisz na swoje typy)
-power_sources = [obj for obj in objects.objects if getattr(obj, "kind", "") == "power_plant"]
-consumers = [obj for obj in objects.objects if getattr(obj, "kind", "") == "house"]
+#Losowanie pozycji generatorów
+TALL_W, TALL_H = 30, 70
+for ry in range(len(rooms)):           # liczba wierszy
+    for rx in range(len(rooms[0])):    # liczba kolumn
+        manager = rooms[ry][rx]
+        spots = generator_spawns.get_spots((rx, ry))
+        if not spots:
+            continue
+        spot_x, spot_y = random.choice(spots)
+        rect = pygame.Rect(0, 0, TALL_W, TALL_H)
+        rect.center = (spot_x, spot_y)
+        manager.add_object("tall_rect", rect)
 
-# Propagacja prądu
-cable_mgr.update_power_state(power_sources, consumers)
+# rozmiar triangle – dopasowany do shape_sizes["triangle"] (40x40 u Ciebie)
+TRI_W, TRI_H = 40, 40
 
+for ry in range(len(rooms)):           # liczba wierszy
+    for rx in range(len(rooms[0])):    # liczba kolumn
+        manager = rooms[ry][rx]
 
+        spots = powerplant_spawns.get_spots((rx, ry))
+        if not spots:
+            continue  # w tym pokoju nie ustawiliśmy spotów
+
+        # 1 generator losowo z dwóch możliwych miejsc:
+        spot_x, spot_y = random.choice(spots)
+
+        rect = pygame.Rect(0, 0, TRI_W, TRI_H)
+        rect.center = (spot_x, spot_y)
+        manager.add_object("triangle", rect)
+
+# -------- MAIN LOOP --------
+
+running = True
 game_started = False
 
-def draw_minimap(screen, rooms, current_x, current_y):
-    """Rysuje mini-mapę 3x3 w prawym górnym rogu."""
-    cell_size = MINIMAP_SIZE // 3
-    # lewy górny róg mini-mapy
-    mini_x = WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
-    mini_y = MINIMAP_MARGIN
-
-    for ry in range(3):          # ry = indeks w pionie (wiersz)
-        for rx in range(3):      # rx = indeks w poziomie (kolumna)
-            x = mini_x + rx * cell_size
-            y = mini_y + ry * cell_size
-            rect = pygame.Rect(x, y, cell_size - 2, cell_size - 2)
-
-            # kolor wnętrza pokoju
-            if rooms[ry][rx].objects:
-                fill_color = (90, 90, 130)   # pokój z obiektami
-            else:
-                fill_color = (60, 60, 60)    # pusty pokój
-
-            pygame.draw.rect(screen, fill_color, rect)
-
-            # ramka – żółta dla aktualnego pokoju, szara dla innych
-            if rx == current_x and ry == current_y:
-                border_color = (255, 255, 0)   # aktualny pokój
-                border_width = 3
-            else:
-                border_color = (180, 180, 180)
-                border_width = 1
-
-            pygame.draw.rect(screen, border_color, rect, border_width)
-
-# --- Główna pętla ---
 running = True
+game_started = False
+pygame.mixer.music.play(-1)
 while running:
-
     dt = clock.tick(FPS)
     mouse_pos = pygame.mouse.get_pos()
 
-    # --- Obsługa zdarzeń ---
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-        # --- MENU STARTU ---
         if not game_started:
-            result = menu.handle_event(event)
-            if result == "start":
+            if menu.handle_event(event) == "start":
+                pygame.mixer.music.stop()
+                pygame.mixer.music.unload()
+                pygame.mixer.music.load("muzyka/dzwiek pokoju1.mp3")
+                pygame.mixer.music.play(-1)
                 game_started = True
-            # dopóki jesteśmy w menu startu, nie obsługujemy niczego więcej
+                uranek.say("Cześć! Jestem Uranek.\nMusisz podłączyć generatory do szkrzynek elektrycznych używając kabli, aby otworzyć przejście do kolejnego pokoju.", 6000)
             continue
 
-        # --- GRA (mini-menu + stawianie obiektów) ---
-        result = menu.handle_event(event)
-        if result in ["triangle", "tall_rect", "long_rect"]:
-            player.change_shape(result)
+        # mini-menu
+        res = menu.handle_event(event)
+        if res in ("triangle", "tall_rect", "long_rect"):
+            uranek.say("Widzisz ten Generator? Musiz podłączyć go do prądu, aby zasilić pokój")
+            player.change_shape(res)
 
-        # PPM – stawianie obiektów
+        # stawianie obiektów PPM
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-            player.place_object(event.pos, objects.objects)
+            player.place_object(event.pos, objects)
 
-    # --- LOGIKA GRY ---
+        # --- TU OBSŁUGUJEMY KLAWISZE ---
+        if event.type == pygame.KEYDOWN:
+            # rotacja kabla
+            if event.key == pygame.K_r and player.shape == "long_rect":
+                player.rotation = 1 - player.rotation
+                if player.rotation == 0:
+                    w, h = 80, 25
+                else:
+                    w, h = 25, 80
+                if player.ghost_rect:
+                    player.ghost_rect.size = (w, h)
+
+            # USUWANIE obiektu pod myszką
+            elif event.key == pygame.K_DELETE and player.shape == "square":
+                removed = objects.remove_at_point(mouse_pos)
+                # print dla testu:
+                # print("Usunięto obiekt?" , removed)
+
+    current_manager = rooms[room_y][room_x]
+    powered_indices = current_manager.compute_powered()
+    objs = current_manager.objects
+
+    generator_powered = False
+    for i in powered_indices:
+        if 0 <= i < len(objs):
+            obj = objs[i]
+
+            # spróbuj wziąć typ z atrybutu .kind
+            kind = getattr(obj, "kind", None)
+
+            # jeśli to krotka typu ("tall_rect", rect, ...) – weź pierwszy element
+            if kind is None and isinstance(obj, tuple) and len(obj) > 0:
+                kind = obj[0]
+
+            if kind == "tall_rect":
+                generator_powered = True
+                break
+
+    electric_doors.set_room_powered(room_x, room_y, generator_powered)
+
     if game_started:
         keys = pygame.key.get_pressed()
-        player.move(keys, objects.objects, WIDTH, HEIGHT)
-        player.update()  # ghost podąża za myszką
+        player.update(dt, keys)
+        update_ghost(player, objects.objects)
+        uranek.update(dt)
 
-        # --- Przejścia między pokojami (3x3) ---
-        # używamy elif, żeby w jednym kroku przechodzić tylko przez jedną ścianę
-        if player.rect.left <= 0 and room_x > 0:
-            # przejście do pokoju po lewej
-            room_x -= 1
+        # kolizje + ewentualna zmiana pokoju
+        prev_x, prev_y = room_x, room_y
+
+        room_x, room_y = electric_doors.handle_collision(player, WIDTH, HEIGHT, room_x, room_y)
+
+        if (room_x, room_y) != (prev_x, prev_y):
             objects = rooms[room_y][room_x]
-            player.rect.right = WIDTH - 10  # pojawiamy się przy prawej krawędzi
 
-        elif player.rect.right >= WIDTH and room_x < 2:
-            # przejście do pokoju po prawej
-            room_x += 1
-            objects = rooms[room_y][room_x]
-            player.rect.left = 10  # pojawiamy się przy lewej krawędzi
-
-        elif player.rect.top <= 0 and room_y > 0:
-            # przejście do pokoju wyżej
-            room_y -= 1
-            objects = rooms[room_y][room_x]
-            player.rect.bottom = HEIGHT - 10  # pojawiamy się przy dolnej krawędzi
-
-        elif player.rect.bottom >= HEIGHT and room_y < 2:
-            # przejście do pokoju niżej
-            room_y += 1
-            objects = rooms[room_y][room_x]
-            player.rect.top = 10  # pojawiamy się przy górnej krawędzi
-            # 🔌 aktualizacja kabli w tym pokoju
-
-        cable_mgr.sync_from_objects(objects.objects)
-
-        power_sources = [obj for obj in objects.objects if getattr(obj, "kind", "") == "power_plant"]
-        consumers = [obj for obj in objects.objects if getattr(obj, "kind", "") == "house"]
-
-        cable_mgr.update_power_state(power_sources, consumers)
-    # --- RYSOWANIE ---
-    screen.fill((50, 50, 50))  # tło
+    # RYSOWANIE
+    screen.fill((40, 40, 40))
 
     if not game_started:
-        # ekran startowy
         menu.draw_start_menu(mouse_pos)
     else:
-        # obiekty w aktualnym pokoju
-        objects.draw(screen)
+        # --- RYSOWANIE ŚCIAN (NOWOŚĆ) ---
+        draw_walls(screen, WIDTH, HEIGHT, room_x, room_y)
 
-        # ghost (podgląd obiektu)
+        # --- OBIEKTY W POKOJU ---
+        powered = objects.compute_powered()
+        objects.draw(screen, powered)
+
+        # --- GHOST ---
         can_place = not player.ghost_collides(objects.objects)
         player.draw_ghost(screen, can_place)
 
-        # gracz + mini-menu
+        # --- GRACZ & MENU ---
         player.draw(screen)
         menu.draw_mini_menu(mouse_pos)
 
-        # mały napis z numerem pokoju (1–3 zamiast 0–2)
-        if not game_started:
-            menu.draw_start_menu(mouse_pos)
-        else:
-            objects.draw(screen)
+        # --- MINI MAPA ---
+        draw_minimap(screen, rooms, room_x, room_y)
 
-            # ghost (podgląd obiektu)
-            can_place = not player.ghost_collides(objects.objects)
-            player.draw_ghost(screen, can_place)
-
-            # gracz + mini-menu
-            player.draw(screen)
-            menu.draw_mini_menu(mouse_pos)
-
-            # mini-mapa 3x3
-            draw_minimap(screen, rooms, room_x, room_y)
+        # --- URANEK PODPOWIADA ---
+        uranek.draw(screen)
 
     pygame.display.update()
 
