@@ -1,6 +1,9 @@
 import pygame
 import random
 
+# === MAŁY HELPER, KTÓREGO BRAKUJE ===
+def _add_wall(manager, rect: pygame.Rect):
+    manager.add_wall(rect)
 
 def asset_center_room(manager, width, height):
     """Kwadratowy mały pokój na środku, z drzwiami na dole."""
@@ -18,8 +21,8 @@ def asset_center_room(manager, width, height):
     door_left = door_center_x - DOOR_SIZE // 2
     door_right = door_center_x + DOOR_SIZE // 2
 
-    manager.add_wall(pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS))               # góra
-    manager.add_wall(pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT))              # lewo
+    manager.add_wall(pygame.Rect(left, top, ROOM_WIDTH, WALL_THICKNESS))                     # góra
+    manager.add_wall(pygame.Rect(left, top, WALL_THICKNESS, ROOM_HEIGHT))                    # lewo
     manager.add_wall(pygame.Rect(right - WALL_THICKNESS, top, WALL_THICKNESS, ROOM_HEIGHT))  # prawo
 
     # dół z przerwą na drzwi
@@ -59,27 +62,146 @@ def asset_corner_room(manager, width, height):
         manager.add_wall(pygame.Rect(door_right, bottom - WALL_THICKNESS,
                                      right - door_right, WALL_THICKNESS))
 
+def first_map_assest(manager, width, height):
+    """
+    Układ inspirowany szkicem:
+    - dwa pokoje po lewej u góry z przerwą na drzwi
+    - pionowa ściana schodząca ze środka w dół
+    - po prawej pionowa ściana z poziomą belką i pionową odnogą
+    - dwie pionowe ścianki w dolnej części (skrócone = drzwi)
+    """
+    WALL = 20
 
-def asset_cross_corridors(manager, width, height):
-    """Korytarz pionowy i poziomy przecinające się na środku."""
-    WALL_THICKNESS = 20
-    CORRIDOR_WIDTH = 140
+    # BEZ marginesu – wewnętrzne ściany mogą stykać się z zewnętrznymi
+    left   = 0
+    right  = width
+    top    = 0
+    bottom = height
 
-    cx_left = width // 2 - CORRIDOR_WIDTH // 2
-    cx_right = width // 2 + CORRIDOR_WIDTH // 2
-    cy_top = height // 2 - CORRIDOR_WIDTH // 2
-    cy_bottom = height // 2 + CORRIDOR_WIDTH // 2
+    W = right - left
+    H = bottom - top
 
-    # pion – duże bloki po bokach
-    manager.add_wall(pygame.Rect(0, 0, cx_left, height))
-    manager.add_wall(pygame.Rect(cx_right, 0, width - cx_right, height))
+    mid_x = (left + right) // 2
 
-    # poziom – bloki nad i pod
-    manager.add_wall(pygame.Rect(0, 0, width, cy_top))
-    manager.add_wall(pygame.Rect(0, cy_bottom, width, height - cy_bottom))
+    # Poziom mniej więcej w 1/3 wysokości
+    y_top_inner = int(top + 0.30 * H)
 
+    # piony ~ tak jak na rysunku
+    x_left_inner  = int(left + 0.30 * W)   # lewy wewnętrzny
+    x_right_inner = int(left + 0.70 * W)   # prawy wewnętrzny
 
-ROOM_ASSETS = [asset_center_room, asset_corner_room, asset_cross_corridors]
+    # ---- GÓRNA LEWA CZĘŚĆ ----
+
+    # krótka pozioma ściana od lewej ściany do okolic 1/5 szerokości
+    h1_end = int(left + 0.20 * W)
+    _add_wall(manager, pygame.Rect(
+        left,
+        y_top_inner,
+        h1_end - left,
+        WALL
+    ))
+
+    # przerwa = drzwi
+
+    # druga krótka pozioma ściana bliżej środka, dochodząca do x_left_inner
+    # h2_start MUSI być < x_left_inner
+    h2_start = int(left + 0.28 * W)   # 0.24W < 0.30W
+    _add_wall(manager, pygame.Rect(
+        h2_start,
+        y_top_inner,
+        x_left_inner - h2_start,
+        WALL
+    ))
+
+    # pionowa ściana schodząca z końca tej poziomej w dół (nie do samego dołu)
+    y_mid_down = int(top + 0.65 * H)
+    _add_wall(manager, pygame.Rect(
+        x_left_inner,
+        y_top_inner,
+        WALL,
+        y_mid_down - y_top_inner
+    ))
+
+    # ---- PIONY W GÓRZE ----
+
+    # lewy wewnętrzny pion – od górnej krawędzi do poziomej
+    _add_wall(manager, pygame.Rect(
+        x_left_inner,
+        top,
+        WALL,
+        y_top_inner - top
+    ))
+
+    # prawy wewnętrzny pion – z DRZWIAMI mniej więcej na wysokości postaci
+    door_height_main = int(0.12 * H)            # wysokość otworu
+    door_center_main = int(top + 0.55 * H)      # położenie drzwi (środek)
+
+    door_top_main = max(top + 10, door_center_main - door_height_main // 2)
+    door_bottom_main = min(bottom - 10, door_top_main + door_height_main)
+
+    # górny fragment ściany
+    if door_top_main > top:
+        _add_wall(manager, pygame.Rect(
+            x_right_inner,
+            top,
+            WALL,
+            door_top_main - top
+        ))
+
+    # dolny fragment ściany
+    if bottom > door_bottom_main:
+        _add_wall(manager, pygame.Rect(
+            x_right_inner,
+            door_bottom_main,
+            WALL,
+            bottom - door_bottom_main
+        ))
+
+    # ---- PRAWY „KORYTARZ” ----
+
+    # pozioma ściana pod postacią – z DRZWIAMI pośrodku
+    y_corridor = int(top + 0.68 * H)
+    span = right - x_right_inner
+    door_width = int(0.3 * span)  # było 0.18, teraz większe drzwi
+    door_width = max(50, min(door_width, span - 30))
+
+    door_left = x_right_inner + (span - door_width) // 2
+    door_right = door_left + door_width
+
+    # lewy kawałek ściany
+    if door_left > x_right_inner:
+        _add_wall(manager, pygame.Rect(
+            x_right_inner,
+            y_corridor,
+            door_left - x_right_inner,
+            WALL
+        ))
+
+    # prawy kawałek ściany
+    if right > door_right:
+        _add_wall(manager, pygame.Rect(
+            door_right,
+            y_corridor,
+            right - door_right,
+            WALL
+        ))
+
+    # ---- DÓŁ ----
+
+    # pionowa ścianka na dole po lewej stronie tej dolnej części – też skrócona od dołu
+    x_bottom_right = left + int(0.30 * W)
+    y_bottom_right_top = int(top + 0.80 * H)
+    door_clearance2 = int(0.05 * H)
+    y_bottom_right_end = bottom - door_clearance2
+
+    _add_wall(manager, pygame.Rect(
+        x_bottom_right,
+        y_bottom_right_top,
+        WALL,
+        y_bottom_right_end - y_bottom_right_top
+    ))
+
+ROOM_ASSETS = [first_map_assest, asset_corner_room, asset_center_room]
 
 
 def apply_random_room_assets(rooms, width, height, skip=None):

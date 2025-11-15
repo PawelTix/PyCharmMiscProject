@@ -132,7 +132,7 @@ while running:
         player.draw(screen)
         menu.draw_mini_menu(mouse_pos)
 
-        # --- MINI MAPA ---
+        # --- MINI MAPA ---a
         draw_minimap(screen, rooms, room_x, room_y)
 
     pygame.display.update()
