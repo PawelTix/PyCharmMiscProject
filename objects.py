@@ -19,6 +19,10 @@ class ObjectManager:
     def add_object(self, shape, rect):
         self.objects.append((shape, rect.copy()))
 
+    def add_wall(self, rect):
+        """Pomocnicza metoda dla rooms_assets – dodaje ścianę."""
+        self.add_object("wall", rect)
+
     # =================== LOGIKA POŁĄCZEŃ ===================
 
     def _rect_connected(self, r1, r2):
