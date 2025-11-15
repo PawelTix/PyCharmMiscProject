@@ -32,7 +32,7 @@ small_font = pygame.font.Font(None, 30)
 uranek = Uranek(screen.get_rect())
 
 menu = Menu(screen, font)
-pygame.mixer_music.load("muzyka/tralala.mp3")
+pygame.mixer_music.load("muzyka/dzwiek menu.mp3")
 player = Player(WIDTH // 2, HEIGHT // 2, animations,uranek)
 electric_doors = ElectricDoorSystem(uranek, grid_w=3, grid_h=3)
 
@@ -110,10 +110,10 @@ while running:
             if menu.handle_event(event) == "start":
                 pygame.mixer.music.stop()
                 pygame.mixer.music.unload()
-                pygame.mixer.music.load("muzyka/dzwiek1.mp3")
+                pygame.mixer.music.load("muzyka/dzwiek pokoju1.mp3")
                 pygame.mixer.music.play(-1)
                 game_started = True
-                uranek.say("Cześć! Jestem Uranek.\nPomogę Ci podłączyć prąd w elektrowni.", 6000)
+                uranek.say("Cześć! Jestem Uranek.\nMusisz podłączyć generatory do szkrzynek elektrycznych używając kabli, aby otworzyć przejście do kolejnego pokoju.", 6000)
             continue
 
         # mini-menu
