@@ -28,7 +28,7 @@ animations = {
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, animations):
+    def __init__(self, x, y, animations, uranek):
         """
         Zgadza się z main.py:
             player = Player(WIDTH // 2, HEIGHT // 2, animations)
@@ -41,6 +41,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_index = 0
         self.image = self.animations[self.direction][self.frame_index]
         self.rect = self.image.get_rect(center=(x, y))
+        self.uranek = uranek
 
         # ruch – px / ms (dt z clock.tick(FPS) jest w ms)
         self.speed = 0.5          # ~0.5 px na 1 ms → ~30 px / klatkę przy 60 FPS
@@ -193,7 +194,7 @@ class Player(pygame.sprite.Sprite):
         MAX_PLACE_DISTANCE = 250
 
         if dx * dx + dy * dy > MAX_PLACE_DISTANCE * MAX_PLACE_DISTANCE:
-            print("❌ Za daleko aby postawić obiekt!")
+            self.uranek.say("Za daleko aby postawić obiekt!",3000)
             return
 
         # kolizja ghosta z obiektami

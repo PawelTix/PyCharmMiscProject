@@ -12,9 +12,10 @@ class ElectricDoorSystem:
     Jeśli pokój jest "zasilony" -> wszystkie drzwi się otwierają.
     """
 
-    def __init__(self, grid_w: int, grid_h: int):
+    def __init__(self, uranek, grid_w: int, grid_h: int):
         self.grid_w = grid_w
         self.grid_h = grid_h
+        self.uranek= uranek
         # domyślnie wszystkie drzwi zamknięte
         self._open = {}  # (x,y) -> dict(dir->bool)
 
@@ -27,6 +28,7 @@ class ElectricDoorSystem:
                 "up": False,
                 "down": False,
             }
+            self.uranek.say("podłącz wszystkie skrzynki elektryczne do prądu",4)
         return self._open[key]
 
     # ---------- API zasilania pokoju ----------
@@ -39,6 +41,7 @@ class ElectricDoorSystem:
         state = self._ensure_room(room_x, room_y)
         for k in state.keys():
             state[k] = powered
+
 
     # ---------- Kolizja ze ścianami zewnętrznymi + drzwi ----------
 
@@ -95,4 +98,4 @@ class ElectricDoorSystem:
 
 
 # globalny system, żeby łatwo importować
-electric_doors = ElectricDoorSystem(grid_w=3, grid_h=3)  # jeśli masz 3x3 pokoje
+  # jeśli masz 3x3 pokoje

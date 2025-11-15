@@ -8,8 +8,9 @@ from walls import draw_walls
 from rooms_assets import apply_random_room_assets
 from ghost import update_ghost
 from uranek import Uranek
-from electric_doors import electric_doors
 from generator_spawns import generator_spawns
+from electric_doors import ElectricDoorSystem
+#from assets import load_textures
 
 
 WIDTH, HEIGHT = 1080, 800
@@ -32,7 +33,8 @@ uranek = Uranek(screen.get_rect())
 
 menu = Menu(screen, font)
 pygame.mixer_music.load("muzyka/tralala.mp3")
-player = Player(WIDTH // 2, HEIGHT // 2, animations)
+player = Player(WIDTH // 2, HEIGHT // 2, animations,uranek)
+electric_doors = ElectricDoorSystem(uranek, grid_w=3, grid_h=3)
 
 def draw_minimap(screen, rooms, rx, ry):
     cell = MINIMAP_SIZE // 3
@@ -57,6 +59,7 @@ objects = rooms[room_y][room_x]
 # losowe układy ścian wewnętrznych
 apply_random_room_assets(rooms, WIDTH, HEIGHT, skip={(room_x, room_y)})
 
+#Losowanie pozycji generatorów
 TALL_W, TALL_H = 30, 70
 for ry in range(len(rooms)):           # liczba wierszy
     for rx in range(len(rooms[0])):    # liczba kolumn
@@ -99,6 +102,12 @@ while running:
         # mini-menu
         res = menu.handle_event(event)
         if res in ("triangle", "tall_rect", "long_rect"):
+            if res == "triangle":
+                uranek.say("postaw generator")
+            elif res == "tall_rect":
+                uranek.say("postaw skrzynke")
+            elif res == "long_rect":
+                uranek.say("postaw kabel")
             player.change_shape(res)
 
         # stawianie obiektów PPM
