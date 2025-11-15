@@ -1,5 +1,6 @@
 import pygame
 
+
 class Menu:
     def __init__(self, screen, font):
         self.screen = screen
@@ -60,8 +61,6 @@ class Menu:
     def draw_start_menu(self, mouse_pos):
         # najpierw tło na cały ekran
         self.screen.blit(self.bg_img, self.bg_rect)
-
-
 
     def draw_mini_menu(self, mouse_pos):
         # zębatka

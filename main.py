@@ -13,7 +13,7 @@ from electric_doors import ElectricDoorSystem
 from powerplant_spawns import powerplant_spawns
 
 
-WIDTH, HEIGHT = 1080, 800
+WIDTH, HEIGHT = 1080, 700
 FPS = 60
 MINIMAP_SIZE = 200
 MINIMAP_MARGIN = 20
