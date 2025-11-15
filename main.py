@@ -12,7 +12,7 @@ from electric_doors import electric_doors
 #from assets import load_textures
 
 
-WIDTH, HEIGHT = 1080, 800
+WIDTH, HEIGHT = 1080, 700
 FPS = 60
 MINIMAP_SIZE = 200
 MINIMAP_MARGIN = 20
@@ -32,7 +32,7 @@ uranek = Uranek(screen.get_rect())
 
 menu = Menu(screen, font)
 pygame.mixer_music.load("muzyka/tralala.mp3")
-player = Player(WIDTH // 2, HEIGHT // 2, animations)
+player = Player(WIDTH // 2, HEIGHT // 2, animations,uranek)
 
 def draw_minimap(screen, rooms, rx, ry):
     cell = MINIMAP_SIZE // 3
