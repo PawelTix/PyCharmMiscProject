@@ -28,6 +28,9 @@ class ElectricDoorSystem:
                 "up": False,
                 "down": False,
             }
+
+            self.uranek.say("podłącz wszystkie skrzynki elektryczne do prądu",4000)
+
             self.uranek.say("podłącz wszystkie skrzynki elektryczne do prądu",4)
         return self._open[key]
 

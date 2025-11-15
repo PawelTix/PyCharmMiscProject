@@ -194,7 +194,7 @@ class Player(pygame.sprite.Sprite):
         MAX_PLACE_DISTANCE = 250
 
         if dx * dx + dy * dy > MAX_PLACE_DISTANCE * MAX_PLACE_DISTANCE:
-            self.uranek.say("Za daleko aby postawić obiekt!",3000)
+            self.uranek.say("Pamiętaj! Twoje Ręce nie są nieskończenie długie!",3000)
             return
 
         # kolizja ghosta z obiektami
